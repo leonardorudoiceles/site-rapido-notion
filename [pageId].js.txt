@@ -1,0 +1,79 @@
+import { Client } from '@notionhq/client';
+
+// Função para renderizar blocos do Notion em HTML
+const renderBlock = (block) => {
+const { type, id } = block;
+const value = block[type];
+
+switch (type) {
+  case 'paragraph':
+    return (
+      <p key={id} style={{ lineHeight: '1.6' }}>
+        {value.rich_text.map(text => text.plain_text).join('')}
+      </p>
+    );
+  case 'heading_1':
+    return (
+      <h1 key={id}>
+        {value.rich_text.map(text => text.plain_text).join('')}
+      </h1>
+    );
+  case 'heading_2':
+    return (
+      <h2 key={id}>
+        {value.rich_text.map(text => text.plain_text).join('')}
+      </h2>
+    );
+  case 'heading_3':
+    return (
+      <h3 key={id}>
+        {value.rich_text.map(text => text.plain_text).join('')}
+      </h3>
+    );
+  // Adicione mais tipos de bloco aqui (ex: bulleted_list_item, image, etc.)
+  default:
+    return <p key={id}></p>; // Renderiza um parágrafo vazio para blocos não suportados
+}
+};
+
+export default function NotionSite({ blocks }) {
+if (!blocks) {
+  return <p>Página não encontrada ou erro ao carregar.</p>
+}
+return (
+  <div style={{ fontFamily: 'sans-serif', maxWidth: '720px', margin: '40px auto', padding: '0 20px' }}>
+    {blocks.map((block) => renderBlock(block))}
+  </div>
+);
+}
+
+// Busca os dados da página do Notion no lado do servidor
+export const getServerSideProps = async (context) => {
+const { pageId } = context.params;
+
+if (!process.env.NOTION_API_KEY) {
+  console.error("Chave da API do Notion não configurada.");
+  return { props: { blocks: null } };
+}
+
+const notion = new Client({ auth: process.env.NOTION_API_KEY });
+
+try {
+  const { results } = await notion.blocks.children.list({
+    block_id: pageId,
+  });
+
+  return {
+    props: {
+      blocks: results,
+    },
+  };
+} catch (error) {
+  console.error(error);
+  return {
+    props: {
+      blocks: null,
+    },
+  };
+}
+};

@@ -1,0 +1,42 @@
+import { useState } from 'react';
+import { useRouter } from 'next/router';
+
+export default function Home() {
+const [notionUrl, setNotionUrl] = useState('');
+const router = useRouter();
+
+const handleSubmit = (e) => {
+  e.preventDefault();
+  try {
+    const url = new URL(notionUrl);
+    const path = url.pathname;
+    const pageId = path.split('-').pop();
+    if (pageId && pageId.length === 32) {
+      router.push(`/${pageId}`);
+    } else {
+      alert('URL do Notion inválida. Use a URL completa da sua página pública.');
+    }
+  } catch (error) {
+    alert('URL inválida. Por favor, cole a URL completa da sua página pública do Notion.');
+  }
+};
+
+return (
+  <div style={{ fontFamily: 'sans-serif', textAlign: 'center', marginTop: '100px' }}>
+    <h1>Site Rápido Notion</h1>
+    <p>Transforme qualquer página do Notion em um site em segundos.</p>
+    <form onSubmit={handleSubmit}>
+      <input
+        type="text"
+        value={notionUrl}
+        onChange={(e) => setNotionUrl(e.target.value)}
+        placeholder="Cole a URL da sua página pública do Notion aqui"
+        style={{ width: '400px', padding: '10px', fontSize: '16px' }}
+      />
+      <button type="submit" style={{ padding: '10px 15px', fontSize: '16px', marginLeft: '10px' }}>
+        Criar Site
+      </button>
+    </form>
+  </div>
+);
+}
